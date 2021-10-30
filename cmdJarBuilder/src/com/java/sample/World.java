@@ -13,7 +13,7 @@ public class World{
     child = new Child();
   }
 
-  public static void min(String[] args){
+  public static void main(String[] args){
     System.out.println("Hello World from cmd builded Jar");
     World world = new World();
     world.sayHello();
