@@ -8,7 +8,7 @@ public class World{
   private Parent parent;
   private Parent child;
 
-  private World(){
+  World(){
     parent = new Parent();
     child = new Child();
   }

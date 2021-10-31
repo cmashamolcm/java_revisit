@@ -120,4 +120,72 @@
       This will generate a jar holding everything from classes including libs.
  4. java -jar abc.jar
       will work (error comes as logger not found, but it detects ConsoleAppender properly which we imported)
-      
+
+12. Java KeyStore: (JKS)
+  1. Its a database of secret keys
+     The keystore itself will be password protected.
+     Represented by class java.security.KeyStore
+     Writes keys to disk and reads it back
+     It can contain
+     private,
+     public keys
+     and public key certificates
+     Java uses HSM (Hardware Security Module) to wrap and protect keys.
+
+  2. Keytool:
+     Used to add private-public key in a KeyStore or in short, it is used to manage the keys and certificates in keystore.
+     Steps:
+     1. keytool -genkeypair
+                -alias asha-test
+                -keypass asha-test-pass
+                -keyalg RSA
+    2. It will ask for a keystore password. Set with anything you like as password.    (line 2, 3 happens for first time use of keytool only. Later, it will be just existing password of keytool to verify.)   
+    3. Reneter this keystore password
+    4. Answer all followup questions (name, org name, country etc)
+    5. Gets created and to list the items in KeyStore
+          keytool -list
+
+    Exporting certificate of a key pair:
+    ------------------------------------
+    keytool -exportcert
+            -alias asha-test
+            -file cert-asha-test
+    will generate certificate and saves in cert-asha-test in current folder.
+
+    Importing certificate of a key pair:
+    ------------------------------------
+    keytool -importcert
+            file cert-asha-test
+            -alias asha-test-imported
+
+    will create new entry in keystore with alias asha-test-imported
+
+    These certificates are generated in our own servers and the public key certificate will be shared to any client of our server so that we can verify them on all SSL communications.
+
+    Eg: If we have a maven repo server and have to allow all users of company only to permit access,
+    generate key pair, export certificate and ask all users of our orgs to import it to their keystore to access as client.
+
+    Sealing A Jar:
+    --------------
+    Packing contents of a Java package together ensuring that it comes from the same source. Uses Sealing: true property in manifest file for the same with package specified. This is to ensure version consistency of all files of that package.
+    When we want to use a default package class from the jar to be used outside, same package can be created in our project and then the visibility problem goes away. To protect such package protected classes from getting used outside, sealing of package of the jar is a way.
+    This makes the package self-contained. 
+
+    Signing A Jar:
+    --------------
+    Adding certificate of trust.
+    Use jarsigner tool for that.
+    If abc.jar is available in current package,
+
+    jarsigner abc.jar alias-of-keystore-key-pair
+
+    will regenerate the jar with alias-of-keystore-key-pair.RSA (machine readable certificate) and alias-of-keystore-key-pair.SF (signature file) in meta-inf folder of jar.
+    This certificate can be used by others to verify that the jar is from trusted person if they have the ability to validate the certificate in their side.
+
+    In MANIFEST.MF file also there will be list of file names and respective SHA-256-Digest.
+    In alias-of-keystore-key-pair.SF also will be having files and digests.
+
+    jarsigner -verify abc.jar
+    will return "jar verified" message if the certificate is with the person who is verifying and is valid.
+
+    If there was any corruption happened, it will throw error.
